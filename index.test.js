@@ -31,16 +31,24 @@ describe('Census State Profiles', () => {
                 }
             };
 
-            global.fetch.mockImplementationOnce(() => 
-                Promise.resolve({
-                    ok: true,
-                    json: () => Promise.resolve([["header"], ["100"]])
-                })
-            );
+            global.fetch
+                .mockImplementationOnce(() => 
+                    Promise.resolve({
+                        ok: true,
+                        json: () => Promise.resolve([["header"], ["100"]])
+                    })
+                )
+                .mockImplementationOnce(() => 
+                    Promise.resolve({
+                        ok: true,
+                        json: () => Promise.resolve([["header"], ["50000"]])
+                    })
+                );
 
             await updateStateInfo(mockState);
             const stateInfo = document.getElementById('state-info');
             expect(stateInfo.innerHTML).toContain('Test State');
+            expect(stateInfo.innerHTML).toContain('$50,000');
         });
 
         test('updateStateInfo shows loading state', async () => {
@@ -50,13 +58,20 @@ describe('Census State Profiles', () => {
                 }
             };
 
-            // Mock a delayed API response
-            global.fetch.mockImplementationOnce(() => 
-                new Promise(resolve => setTimeout(() => resolve({ 
-                    ok: true,
-                    json: () => Promise.resolve([["header"], ["100"]])
-                }), 100))
-            );
+            // Mock delayed API responses
+            global.fetch
+                .mockImplementationOnce(() => 
+                    new Promise(resolve => setTimeout(() => resolve({ 
+                        ok: true,
+                        json: () => Promise.resolve([["header"], ["100"]])
+                    }), 100))
+                )
+                .mockImplementationOnce(() => 
+                    new Promise(resolve => setTimeout(() => resolve({ 
+                        ok: true,
+                        json: () => Promise.resolve([["header"], ["50000"]])
+                    }), 100))
+                );
 
             const promise = updateStateInfo(mockState);
             const stateInfo = document.getElementById('state-info');
@@ -90,22 +105,30 @@ describe('Census State Profiles', () => {
     });
 
     describe('API Integration', () => {
-        test('fetchStateCensusData makes correct API call', async () => {
+        test('fetchStateCensusData makes correct API calls', async () => {
             const mockState = {
                 properties: {
                     name: 'Virginia'
                 }
             };
 
-            global.fetch.mockImplementationOnce(() => 
-                Promise.resolve({
-                    ok: true,
-                    json: () => Promise.resolve([["header"], ["100"]])
-                })
-            );
+            global.fetch
+                .mockImplementationOnce(() => 
+                    Promise.resolve({
+                        ok: true,
+                        json: () => Promise.resolve([["header"], ["100"]])
+                    })
+                )
+                .mockImplementationOnce(() => 
+                    Promise.resolve({
+                        ok: true,
+                        json: () => Promise.resolve([["header"], ["50000"]])
+                    })
+                );
 
             await fetchStateCensusData(mockState);
             expect(fetch).toHaveBeenCalledWith(expect.stringContaining('api.census.gov'));
+            expect(fetch).toHaveBeenCalledWith(expect.stringContaining('acs/acs5'));
         });
 
         test('fetchStateCensusData handles network error', async () => {
@@ -119,6 +142,7 @@ describe('Census State Profiles', () => {
 
             const data = await fetchStateCensusData(mockState);
             expect(data.population).toBe('Error loading data');
+            expect(data.medianIncome).toBe('Error loading data');
         });
 
         test('fetchStateCensusData caches responses', async () => {
@@ -128,12 +152,19 @@ describe('Census State Profiles', () => {
                 }
             };
 
-            global.fetch.mockImplementationOnce(() => 
-                Promise.resolve({
-                    ok: true,
-                    json: () => Promise.resolve([["header"], ["100"]])
-                })
-            );
+            global.fetch
+                .mockImplementationOnce(() => 
+                    Promise.resolve({
+                        ok: true,
+                        json: () => Promise.resolve([["header"], ["100"]])
+                    })
+                )
+                .mockImplementationOnce(() => 
+                    Promise.resolve({
+                        ok: true,
+                        json: () => Promise.resolve([["header"], ["50000"]])
+                    })
+                );
 
             // First call
             await fetchStateCensusData(mockState);
@@ -141,27 +172,35 @@ describe('Census State Profiles', () => {
             // Second call should use cache
             await fetchStateCensusData(mockState);
 
-            expect(fetch).toHaveBeenCalledTimes(1);
+            expect(fetch).toHaveBeenCalledTimes(2); // One for population, one for income
         });
     });
 
     describe('Data Processing', () => {
-        test('processes population data correctly', async () => {
+        test('processes population and income data correctly', async () => {
             const mockState = {
                 properties: {
                     name: 'Virginia'
                 }
             };
 
-            global.fetch.mockImplementationOnce(() => 
-                Promise.resolve({
-                    ok: true,
-                    json: () => Promise.resolve([["header"], ["100"]])
-                })
-            );
+            global.fetch
+                .mockImplementationOnce(() => 
+                    Promise.resolve({
+                        ok: true,
+                        json: () => Promise.resolve([["header"], ["100"]])
+                    })
+                )
+                .mockImplementationOnce(() => 
+                    Promise.resolve({
+                        ok: true,
+                        json: () => Promise.resolve([["header"], ["50000"]])
+                    })
+                );
 
             const data = await fetchStateCensusData(mockState);
             expect(data.population).toBe('100');
+            expect(data.medianIncome).toBe('$50,000');
         });
 
         test('handles malformed API response', async () => {
@@ -171,15 +210,17 @@ describe('Census State Profiles', () => {
                 }
             };
 
-            global.fetch.mockImplementationOnce(() => 
-                Promise.resolve({
-                    ok: true,
-                    json: () => Promise.resolve(null)
-                })
-            );
+            global.fetch
+                .mockImplementationOnce(() => 
+                    Promise.resolve({
+                        ok: true,
+                        json: () => Promise.resolve(null)
+                    })
+                );
 
             const data = await fetchStateCensusData(mockState);
             expect(data.population).toBe('Error loading data');
+            expect(data.medianIncome).toBe('Error loading data');
         });
     });
 });

@@ -46,12 +46,33 @@ async function fetchStateCensusData(state) {
             throw new Error('Invalid population data');
         }
 
+        // Get income data (using ACS 5-year estimates)
+        const incomeResponse = await fetch(
+            `https://api.census.gov/data/2021/acs/acs5?get=B19013_001E&for=state:${stateId}&key=${CENSUS_API_KEY}`
+        );
+
+        if (!incomeResponse || !incomeResponse.ok) {
+            throw new Error('Income API response was not ok');
+        }
+
+        const incomeData = await incomeResponse.json();
+
+        if (!incomeData || !Array.isArray(incomeData) || !incomeData[1] || !incomeData[1][0]) {
+            throw new Error('Invalid income data');
+        }
+
         const population = popData[1][0];
+        const medianIncome = incomeData[1][0];
+
+        // Format income with commas and dollar sign
+        const formattedIncome = medianIncome !== null ? 
+            `$${parseInt(medianIncome).toLocaleString()}` : 
+            'Data not available';
 
         // Cache the data
         const result = {
             population: population,
-            medianIncome: 'Data not available',
+            medianIncome: formattedIncome,
             capital: stateCapitals[stateName] || 'Data not available',
             largestCity: stateLargestCities[stateName] || 'Data not available',
             governor: stateGovernors[stateName] || 'Data not available'
