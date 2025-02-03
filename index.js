@@ -1,7 +1,7 @@
 // Add at the beginning of the file
 const isTestEnvironment = typeof jest !== 'undefined';
 
-// Sample census data (you can replace this with real API data)
+// Sample census data (you can replace this)
 const CENSUS_API_KEY = '53ec8130e4411ed08c1b622c878dd5676142791e';
 const censusData = {};
 
