@@ -24,9 +24,7 @@ async function fetchStateCensusData(state) {
             education: 'Error loading data',
             medianAge: 'Error loading data',
             homeownership: 'Error loading data',
-            capital: 'Error loading data',
-            largestCity: 'Error loading data',
-            governor: 'Error loading data'
+            capital: 'Error loading data'
         };
     }
 
@@ -99,9 +97,7 @@ async function fetchStateCensusData(state) {
             education: formatPercentage(educationPercentage),
             medianAge: `${ageData[1][0]} years`,
             homeownership: formatPercentage(homeownershipRate),
-            capital: stateCapitals[stateName] || 'Data not available',
-            largestCity: stateLargestCities[stateName] || 'Data not available',
-            governor: stateGovernors[stateName] || 'Data not available'
+            capital: stateCapitals[stateName] || 'Data not available'
         };
 
         censusData[stateId] = result;
@@ -114,9 +110,7 @@ async function fetchStateCensusData(state) {
             education: 'Error loading data',
             medianAge: 'Error loading data',
             homeownership: 'Error loading data',
-            capital: 'Error loading data',
-            largestCity: 'Error loading data',
-            governor: 'Error loading data'
+            capital: 'Error loading data'
         };
         censusData[stateId] = errorResult;
         return errorResult;
@@ -125,10 +119,9 @@ async function fetchStateCensusData(state) {
 
 async function updateStateInfo(state, isPersistent = false) {
     const stateInfo = document.getElementById('state-info');
+    
     if (!state) {
-        stateInfo.innerHTML = `
-            <p class="placeholder">Hover over a state to see its information</p>
-        `;
+        stateInfo.innerHTML = '<p class="placeholder">Hover over a state to see its information</p>';
         return;
     }
 
@@ -159,14 +152,14 @@ async function updateStateInfo(state, isPersistent = false) {
         }
 
         stateInfo.innerHTML = `
-            <h3>${stateName}</h3>
+            <h2>${state.properties.name}</h2>
             <table>
                 <tr>
                     <td>Population (2020)</td>
                     <td>${data.population}</td>
                 </tr>
                 <tr>
-                    <td>Median Income</td>
+                    <td>Median Household Income</td>
                     <td>${data.medianIncome}</td>
                 </tr>
                 <tr>
@@ -184,14 +177,6 @@ async function updateStateInfo(state, isPersistent = false) {
                 <tr>
                     <td>Capital</td>
                     <td>${data.capital}</td>
-                </tr>
-                <tr>
-                    <td>Largest City</td>
-                    <td>${data.largestCity}</td>
-                </tr>
-                <tr>
-                    <td>Governor</td>
-                    <td>${data.governor}</td>
                 </tr>
             </table>
         `;
@@ -254,112 +239,6 @@ const stateCapitals = {
     "West Virginia": "Charleston",
     "Wisconsin": "Madison",
     "Wyoming": "Cheyenne"
-};
-
-const stateLargestCities = {
-    "Alabama": "Birmingham",
-    "Alaska": "Anchorage",
-    "Arizona": "Phoenix",
-    "Arkansas": "Little Rock",
-    "California": "Los Angeles",
-    "Colorado": "Denver",
-    "Connecticut": "Bridgeport",
-    "Delaware": "Wilmington",
-    "Florida": "Jacksonville",
-    "Georgia": "Atlanta",
-    "Hawaii": "Honolulu",
-    "Idaho": "Boise",
-    "Illinois": "Chicago",
-    "Indiana": "Indianapolis",
-    "Iowa": "Des Moines",
-    "Kansas": "Wichita",
-    "Kentucky": "Louisville",
-    "Louisiana": "New Orleans",
-    "Maine": "Portland",
-    "Maryland": "Baltimore",
-    "Massachusetts": "Boston",
-    "Michigan": "Detroit",
-    "Minnesota": "Minneapolis",
-    "Mississippi": "Jackson",
-    "Missouri": "Kansas City",
-    "Montana": "Billings",
-    "Nebraska": "Omaha",
-    "Nevada": "Las Vegas",
-    "New Hampshire": "Manchester",
-    "New Jersey": "Newark",
-    "New Mexico": "Albuquerque",
-    "New York": "New York City",
-    "North Carolina": "Charlotte",
-    "North Dakota": "Fargo",
-    "Ohio": "Columbus",
-    "Oklahoma": "Oklahoma City",
-    "Oregon": "Portland",
-    "Pennsylvania": "Philadelphia",
-    "Rhode Island": "Providence",
-    "South Carolina": "Charleston",
-    "South Dakota": "Sioux Falls",
-    "Tennessee": "Nashville",
-    "Texas": "Houston",
-    "Utah": "Salt Lake City",
-    "Vermont": "Burlington",
-    "Virginia": "Virginia Beach",
-    "Washington": "Seattle",
-    "West Virginia": "Charleston",
-    "Wisconsin": "Milwaukee",
-    "Wyoming": "Cheyenne"
-};
-
-const stateGovernors = {
-    "Alabama": "Kay Ivey",
-    "Alaska": "Mike Dunleavy",
-    "Arizona": "Katie Hobbs",
-    "Arkansas": "Sarah Huckabee Sanders",
-    "California": "Gavin Newsom",
-    "Colorado": "Jared Polis",
-    "Connecticut": "Ned Lamont",
-    "Delaware": "John Carney",
-    "Florida": "Ron DeSantis",
-    "Georgia": "Brian Kemp",
-    "Hawaii": "Josh Green",
-    "Idaho": "Brad Little",
-    "Illinois": "J.B. Pritzker",
-    "Indiana": "Eric Holcomb",
-    "Iowa": "Kim Reynolds",
-    "Kansas": "Laura Kelly",
-    "Kentucky": "Andy Beshear",
-    "Louisiana": "Jeff Landry",
-    "Maine": "Janet Mills",
-    "Maryland": "Wes Moore",
-    "Massachusetts": "Maura Healey",
-    "Michigan": "Gretchen Whitmer",
-    "Minnesota": "Tim Walz",
-    "Mississippi": "Tate Reeves",
-    "Missouri": "Mike Parson",
-    "Montana": "Greg Gianforte",
-    "Nebraska": "Jim Pillen",
-    "Nevada": "Joe Lombardo",
-    "New Hampshire": "Chris Sununu",
-    "New Jersey": "Phil Murphy",
-    "New Mexico": "Michelle Lujan Grisham",
-    "New York": "Kathy Hochul",
-    "North Carolina": "Roy Cooper",
-    "North Dakota": "Doug Burgum",
-    "Ohio": "Mike DeWine",
-    "Oklahoma": "Kevin Stitt",
-    "Oregon": "Tina Kotek",
-    "Pennsylvania": "Josh Shapiro",
-    "Rhode Island": "Dan McKee",
-    "South Carolina": "Henry McMaster",
-    "South Dakota": "Kristi Noem",
-    "Tennessee": "Bill Lee",
-    "Texas": "Greg Abbott",
-    "Utah": "Spencer Cox",
-    "Vermont": "Phil Scott",
-    "Virginia": "Glenn Youngkin",
-    "Washington": "Jay Inslee",
-    "West Virginia": "Jim Justice",
-    "Wisconsin": "Tony Evers",
-    "Wyoming": "Mark Gordon"
 };
 
 const stateAbbreviations = {
