@@ -13,8 +13,8 @@ An interactive visualization of US state census data using D3.js and the Census 
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/yourusername/census-state-profiles.git
-cd census-state-profiles
+git clone https://github.com/MahiaRahman9971/cs1060hw1.git
+cd cs1060hw1
 ```
 
 2. Install dependencies:
