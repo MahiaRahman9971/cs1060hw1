@@ -10,12 +10,20 @@ function numberWithCommas(x) {
     return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 }
 
+// Function to format percentages
+function formatPercentage(value) {
+    return `${parseFloat(value).toFixed(1)}%`;
+}
+
 // Function to fetch census data for a state
 async function fetchStateCensusData(state) {
     if (!state || !state.properties || !state.properties.name) {
         return {
             population: 'Error loading data',
             medianIncome: 'Error loading data',
+            education: 'Error loading data',
+            medianAge: 'Error loading data',
+            homeownership: 'Error loading data',
             capital: 'Error loading data',
             largestCity: 'Error loading data',
             governor: 'Error loading data'
@@ -31,48 +39,66 @@ async function fetchStateCensusData(state) {
     }
 
     try {
-        // Get population data
+        // Get population data (2020 Census)
         const popResponse = await fetch(
             `https://api.census.gov/data/2020/dec/pl?get=P1_001N&for=state:${stateId}&key=${CENSUS_API_KEY}`
         );
         
-        if (!popResponse || !popResponse.ok) {
-            throw new Error('API response was not ok');
-        }
-        
+        if (!popResponse.ok) throw new Error('Population API response was not ok');
         const popData = await popResponse.json();
-        
-        if (!popData || !Array.isArray(popData) || !popData[1] || !popData[1][0]) {
-            throw new Error('Invalid population data');
-        }
+        if (!popData?.[1]?.[0]) throw new Error('Invalid population data');
 
-        // Get income data (using ACS 5-year estimates)
+        // Get income data (ACS 5-year)
         const incomeResponse = await fetch(
             `https://api.census.gov/data/2021/acs/acs5?get=B19013_001E&for=state:${stateId}&key=${CENSUS_API_KEY}`
         );
-
-        if (!incomeResponse || !incomeResponse.ok) {
-            throw new Error('Income API response was not ok');
-        }
-
+        
+        if (!incomeResponse.ok) throw new Error('Income API response was not ok');
         const incomeData = await incomeResponse.json();
+        if (!incomeData?.[1]?.[0]) throw new Error('Invalid income data');
 
-        if (!incomeData || !Array.isArray(incomeData) || !incomeData[1] || !incomeData[1][0]) {
-            throw new Error('Invalid income data');
-        }
+        // Get education data (% with Bachelor's or higher)
+        const educationResponse = await fetch(
+            `https://api.census.gov/data/2021/acs/acs5?get=B15003_022E,B15003_023E,B15003_024E,B15003_025E,B15003_001E&for=state:${stateId}&key=${CENSUS_API_KEY}`
+        );
+        
+        if (!educationResponse.ok) throw new Error('Education API response was not ok');
+        const educationData = await educationResponse.json();
+        if (!educationData?.[1]) throw new Error('Invalid education data');
+        
+        // Calculate percentage with Bachelor's or higher
+        const [bachelors, masters, professional, doctorate, total] = educationData[1].slice(0, 5).map(Number);
+        const educationPercentage = ((bachelors + masters + professional + doctorate) / total) * 100;
 
-        const population = popData[1][0];
-        const medianIncome = incomeData[1][0];
+        // Get median age data
+        const ageResponse = await fetch(
+            `https://api.census.gov/data/2021/acs/acs5?get=B01002_001E&for=state:${stateId}&key=${CENSUS_API_KEY}`
+        );
+        
+        if (!ageResponse.ok) throw new Error('Age API response was not ok');
+        const ageData = await ageResponse.json();
+        if (!ageData?.[1]?.[0]) throw new Error('Invalid age data');
 
-        // Format income with commas and dollar sign
-        const formattedIncome = medianIncome !== null ? 
-            `$${parseInt(medianIncome).toLocaleString()}` : 
-            'Data not available';
+        // Get homeownership data
+        const housingResponse = await fetch(
+            `https://api.census.gov/data/2021/acs/acs5?get=B25003_002E,B25003_001E&for=state:${stateId}&key=${CENSUS_API_KEY}`
+        );
+        
+        if (!housingResponse.ok) throw new Error('Housing API response was not ok');
+        const housingData = await housingResponse.json();
+        if (!housingData?.[1]) throw new Error('Invalid housing data');
+        
+        // Calculate homeownership rate
+        const [ownerOccupied, totalHousing] = housingData[1].slice(0, 2).map(Number);
+        const homeownershipRate = (ownerOccupied / totalHousing) * 100;
 
-        // Cache the data
+        // Format and cache the data
         const result = {
-            population: population,
-            medianIncome: formattedIncome,
+            population: numberWithCommas(popData[1][0]),
+            medianIncome: `$${numberWithCommas(incomeData[1][0])}`,
+            education: formatPercentage(educationPercentage),
+            medianAge: `${ageData[1][0]} years`,
+            homeownership: formatPercentage(homeownershipRate),
             capital: stateCapitals[stateName] || 'Data not available',
             largestCity: stateLargestCities[stateName] || 'Data not available',
             governor: stateGovernors[stateName] || 'Data not available'
@@ -85,6 +111,9 @@ async function fetchStateCensusData(state) {
         const errorResult = {
             population: 'Error loading data',
             medianIncome: 'Error loading data',
+            education: 'Error loading data',
+            medianAge: 'Error loading data',
+            homeownership: 'Error loading data',
             capital: 'Error loading data',
             largestCity: 'Error loading data',
             governor: 'Error loading data'
@@ -139,6 +168,18 @@ async function updateStateInfo(state, isPersistent = false) {
                 <tr>
                     <td>Median Income</td>
                     <td>${data.medianIncome}</td>
+                </tr>
+                <tr>
+                    <td>Education (Bachelor's or higher)</td>
+                    <td>${data.education}</td>
+                </tr>
+                <tr>
+                    <td>Median Age</td>
+                    <td>${data.medianAge}</td>
+                </tr>
+                <tr>
+                    <td>Homeownership Rate</td>
+                    <td>${data.homeownership}</td>
                 </tr>
                 <tr>
                     <td>Capital</td>

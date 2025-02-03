@@ -1,3 +1,7 @@
+### Contriubutor: Mahia Rahman <mahiarahman@college.harvard.edu>
+### Issues: Proper mapping of states, obtaining data from the 2020 Census API, Testing
+### Hours it took me: 4 hours
+
 # Census State Profiles
 
 An interactive visualization of US state census data using D3.js and the Census API.
